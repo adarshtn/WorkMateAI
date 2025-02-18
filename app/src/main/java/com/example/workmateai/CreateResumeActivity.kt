@@ -18,6 +18,17 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.graphics.Color
 import com.example.workmateai.ui.theme.WorkMateAITheme
+import android.content.Context
+import android.graphics.Paint
+import android.graphics.*
+import android.graphics.pdf.PdfDocument
+import android.os.Environment
+import java.io.File
+import java.io.FileOutputStream
+import android.content.Intent
+import androidx.core.content.FileProvider
+import android.graphics.Typeface
+
 
 class CreateResumeActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -74,7 +85,7 @@ fun CreateResumeScreen() {
         OutlinedTextField(
             value = phone,
             onValueChange = { phone = it },
-            label = { Text("Phone Number") },
+            label = { Text("Phone Number/EmailID") },
             modifier = Modifier.fillMaxWidth()
         )
 
@@ -160,8 +171,16 @@ fun CreateResumeScreen() {
         // Submit Button
         Button(
             onClick = {
-                // Your logic to handle resume creation
-                Toast.makeText(context, "Resume Created", Toast.LENGTH_SHORT).show()
+                generatePDF(
+                    context = context,
+                    name = name,
+                    phone = phone,
+                    location = location,
+                    educationList = educationFields.filter { it.isNotBlank() },
+                    skillsList = skillsFields.filter { it.isNotBlank() },
+                    experienceList = experienceFields.filter { it.isNotBlank() },
+                    projectsList = projectsFields.filter { it.isNotBlank() }
+                )
             },
             modifier = Modifier.fillMaxWidth()
         ) {
@@ -170,10 +189,168 @@ fun CreateResumeScreen() {
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun CreateResumePreview() {
-    WorkMateAITheme {
-        CreateResumeScreen()
+
+fun generatePDF(
+    context: Context,
+    name: String,
+    phone: String,
+    location: String,
+    educationList: List<String>,
+    skillsList: List<String>,
+    experienceList: List<String>,
+    projectsList: List<String>
+) {
+    val pdfDocument = PdfDocument()
+
+    val namePaint = Paint().apply {
+        textSize = 32f
+        typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+        textAlign = Paint.Align.CENTER
+    }
+
+    val subheadingPaint = Paint().apply {
+        textSize = 14f
+        typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+    }
+
+    val contentPaint = Paint().apply {
+        textSize = 12f
+    }
+
+    val borderPaint = Paint().apply {
+        strokeWidth = 2f
+        style = Paint.Style.STROKE
+    }
+
+    val pageInfo = PdfDocument.PageInfo.Builder(595, 842, 1).create() // A4 size
+    val page = pdfDocument.startPage(pageInfo)
+    val canvas = page.canvas
+
+    // Define margins
+    val margin = 30f
+    val contentMargin = margin + 20f  // Additional margin for content inside border
+
+    // Draw border
+    canvas.drawRect(
+        margin,
+        margin,
+        (pageInfo.pageWidth - margin),
+        (pageInfo.pageHeight - margin),
+        borderPaint
+    )
+
+    var yPosition = 100f
+
+    // Name (Centered)
+    canvas.drawText(name, (pageInfo.pageWidth / 2).toFloat(), yPosition, namePaint)
+    yPosition += 50
+
+    // Calculate available width for text wrapping
+    val availableWidth = pageInfo.pageWidth - (2 * contentMargin)
+
+    // Contact Information
+    yPosition = drawWrappedText(canvas, "Contact: $phone", contentMargin, yPosition, contentPaint, availableWidth)
+    yPosition = drawWrappedText(canvas, "Location: $location", contentMargin, yPosition, contentPaint, availableWidth)
+    yPosition += 20
+
+    // Education Section
+    canvas.drawText("Education", contentMargin, yPosition, subheadingPaint)
+    yPosition += 20
+    for (edu in educationList) {
+        yPosition = drawWrappedText(canvas, "- $edu", contentMargin + 10, yPosition, contentPaint, availableWidth - 10)
+        yPosition += 10
+    }
+
+    // Skills Section
+    yPosition += 10
+    canvas.drawText("Skills", contentMargin, yPosition, subheadingPaint)
+    yPosition += 20
+    for (skill in skillsList) {
+        yPosition = drawWrappedText(canvas, "- $skill", contentMargin + 10, yPosition, contentPaint, availableWidth - 10)
+        yPosition += 10
+    }
+
+    // Experience Section
+    yPosition += 10
+    canvas.drawText("Experience", contentMargin, yPosition, subheadingPaint)
+    yPosition += 20
+    for (exp in experienceList) {
+        yPosition = drawWrappedText(canvas, "- $exp", contentMargin + 10, yPosition, contentPaint, availableWidth - 10)
+        yPosition += 10
+    }
+
+    // Projects Section
+    yPosition += 10
+    canvas.drawText("Projects", contentMargin, yPosition, subheadingPaint)
+    yPosition += 20
+    for (proj in projectsList) {
+        yPosition = drawWrappedText(canvas, "- $proj", contentMargin + 10, yPosition, contentPaint, availableWidth - 10)
+        yPosition += 10
+    }
+
+    pdfDocument.finishPage(page)
+
+    val filePath = File(context.getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS), "Resume.pdf")
+    try {
+        pdfDocument.writeTo(FileOutputStream(filePath))
+        pdfDocument.close()
+        Toast.makeText(context, "PDF saved at ${filePath.absolutePath}", Toast.LENGTH_LONG).show()
+        openPDF(context, filePath)
+    } catch (e: Exception) {
+        e.printStackTrace()
+        Toast.makeText(context, "Error saving PDF", Toast.LENGTH_LONG).show()
+    }
+}
+
+fun drawWrappedText(canvas: Canvas, text: String, x: Float, y: Float, paint: Paint, maxWidth: Float): Float {
+    val words = text.split(" ")
+    var currentLine = ""
+    var yPos = y
+
+    for (word in words) {
+        val testLine = if (currentLine.isEmpty()) word else "$currentLine $word"
+        val textWidth = paint.measureText(testLine)
+
+        if (textWidth > maxWidth) {
+            // Justify the current line
+            val lineWidth = paint.measureText(currentLine)
+            val spaceWidth = paint.measureText(" ")
+
+            val extraSpace = (maxWidth - lineWidth) / (currentLine.split(" ").size - 1)
+            var xPos = x
+
+            // Draw each word with additional spaces for justification
+            currentLine.split(" ").forEachIndexed { index, word ->
+                canvas.drawText(word, xPos, yPos, paint)
+                xPos += paint.measureText(word) + extraSpace
+            }
+            yPos += paint.textSize + 5  // Add a small gap between lines
+            currentLine = word
+        } else {
+            currentLine = testLine
+        }
+    }
+
+    // Handle the last line (left-aligned)
+    if (currentLine.isNotEmpty()) {
+        canvas.drawText(currentLine, x, yPos, paint)
+        yPos += paint.textSize + 5
+    }
+
+    return yPos
+}
+
+// Function to Open the PDF File
+fun openPDF(context: Context, file: File) {
+    val uri = FileProvider.getUriForFile(context, "${context.packageName}.provider", file)
+
+    val intent = Intent(Intent.ACTION_VIEW)
+    intent.setDataAndType(uri, "application/pdf")
+    intent.flags = Intent.FLAG_GRANT_READ_URI_PERMISSION
+
+    try {
+        context.startActivity(intent)
+    } catch (e: Exception) {
+        Toast.makeText(context, "No PDF Viewer Installed", Toast.LENGTH_LONG).show()
     }
 }
