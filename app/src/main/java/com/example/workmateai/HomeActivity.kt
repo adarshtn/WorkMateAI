@@ -16,9 +16,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.graphics.Color
 import com.example.workmateai.ui.theme.WorkMateAITheme
-import android.content.Intent
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.material3.MaterialTheme
+import android.content.Intent
+import android.os.Environment
+import android.widget.Toast
+import androidx.core.content.FileProvider
+import java.io.File
 
 
 class HomeActivity : ComponentActivity() {
@@ -35,58 +39,45 @@ class HomeActivity : ComponentActivity() {
 fun HomeScreen() {
     val context = LocalContext.current
 
-    // Column for arranging elements vertically
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp), // Adds padding around the whole layout
-        horizontalAlignment = Alignment.CenterHorizontally, // Centers elements horizontally
-        verticalArrangement = Arrangement.Center // Centers elements vertically
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
     ) {
-        // Heading "WorkMate AI"
+        // App Name
         Text(
             text = "WorkMate AI",
             style = MaterialTheme.typography.headlineLarge.copy(
                 fontWeight = FontWeight.Bold,
-                color = Color.Black // Set heading color to black
+                color = Color.Black
             ),
-            modifier = Modifier.padding(bottom = 32.dp) // Adds padding below the heading
+            modifier = Modifier.padding(bottom = 24.dp) // Reduced bottom padding
         )
 
-        // Modifier for the buttons to make them fill the width and add padding
+        // Standard button modifier
         val buttonModifier = Modifier
             .fillMaxWidth()
-            .padding(8.dp)
+            .padding(vertical = 6.dp) // Reduced vertical padding for compact layout
 
-        // Button for creating a new resume
+        // Buttons
         Button(
-            onClick = {
-                // Navigate to the CreateResumeActivity
-                val intent = Intent(context, CreateResumeActivity::class.java)
-                context.startActivity(intent)
-            },
+            onClick = { context.startActivity(Intent(context, CreateResumeActivity::class.java)) },
             modifier = buttonModifier
         ) {
             Text("Create Resume")
         }
 
-
-        // Button for viewing saved resume
         Button(
-            onClick = {
-                // Handle button click for viewing saved resume
-            },
+            onClick = { context.startActivity(Intent(context, ViewResumesActivity::class.java)) },
             modifier = buttonModifier
         ) {
-            Text("View Saved Resume")
+            Text("View Saved Resumes")
         }
 
-
-        // Button for job suggestions
         Button(
-            onClick = {
-                // Handle button click for job suggestions
-            },
+            onClick = {  context.startActivity(Intent(context, JobSuggestionsActivity::class.java)) },
             modifier = buttonModifier
         ) {
             Text("Job Suggestions")

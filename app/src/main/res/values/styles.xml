@@ -13,4 +13,8 @@
         <item name="cornerFamily">rounded</item>
         <item name="cornerSize">12dp</item>
     </style>
+    <style name="Theme.WorkMateAI.Splash" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/white</item>
+        <item name="windowSplashScreenAnimatedIcon">@mipmap/ic_launcher</item>
+    </style>
 </resources>

@@ -2,4 +2,6 @@
     <external-path
         name="external_files"
         path="Android/data/com.example.workmateai/files/Documents/" />
+
+<external-files-path name="documents" path="Documents/" />
 </paths>
