@@ -2,22 +2,25 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+
+    id 'com.google.gms.google-services'
+
 }
 
 android {
     namespace 'com.example.workmateai'
     compileSdk 35
-
     defaultConfig {
         applicationId "com.example.workmateai"
         minSdk 24
         targetSdk 35
         versionCode 1
         versionName "1.0"
-
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        packagingOptions {
+            exclude 'META-INF/DEPENDENCIES'
+        }
     }
-
     buildTypes {
         release {
             minifyEnabled false
@@ -34,10 +37,12 @@ android {
     buildFeatures {
         compose true
     }
+    composeOptions {
+        kotlinCompilerExtensionVersion '2.0.0'
+    }
 }
 
 dependencies {
-
     implementation libs.androidx.core.ktx
     implementation libs.androidx.lifecycle.runtime.ktx
     implementation libs.androidx.activity.compose
@@ -53,22 +58,28 @@ dependencies {
     androidTestImplementation libs.androidx.ui.test.junit4
     debugImplementation libs.androidx.ui.tooling
     debugImplementation libs.androidx.ui.test.manifest
+    implementation libs.firebase.auth
+    implementation libs.firebase.firestore
+    implementation libs.firebase.storage
+    implementation 'com.google.firebase:firebase-storage'
+    implementation 'com.google.firebase:firebase-auth'
+    implementation 'com.google.firebase:firebase-firestore'
+    implementation 'com.google.firebase:firebase-database:20.3.0'
+
     implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
     implementation 'com.google.android.material:material:1.11.0'
-    implementation 'com.google.android.material:material:1.9.0'
-    implementation "androidx.activity:activity-compose:1.8.0"
-    implementation "androidx.compose.material3:material3:1.1.2"
-    implementation "androidx.compose.ui:ui:1.5.4"
-    implementation "androidx.compose.ui:ui-tooling-preview:1.5.4"
     implementation 'com.itextpdf:itext7-core:7.1.9'
-    implementation "androidx.core:core-splashscreen:1.0.1"
-    implementation "androidx.activity:activity-compose:1.9.0"
-    implementation "androidx.compose.material3:material3:1.2.1"
-    implementation "androidx.core:core-ktx:1.12.0"
-    implementation "androidx.appcompat:appcompat:1.6.1"
-    implementation "androidx.compose.material3:material3:1.1.0"
-    implementation "androidx.compose.material3:material3:1.1.2"
+    implementation 'androidx.core:core-splashscreen:1.0.1'
+    implementation 'com.google.code.gson:gson:2.9.0' // JSON parsing
+    implementation 'com.squareup.okhttp3:okhttp:4.10.0' // HTTP requests
+    implementation 'com.squareup.okhttp3:okhttp:4.10.0' // Latest OkHttp version
+    implementation 'com.google.code.gson:gson:2.10.1' // Latest version of Gson
+    implementation 'org.apache.pdfbox:pdfbox:2.0.30'
+    implementation 'com.tom-roush:pdfbox-android:2.0.27.0'
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3'
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3'
+    implementation 'com.facebook.shimmer:shimmer:0.5.0'
 
 
 }

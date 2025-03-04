@@ -2,6 +2,7 @@ package com.example.workmateai
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.*
@@ -15,63 +16,102 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.graphics.Color
 import com.example.workmateai.ui.theme.WorkMateAITheme
+import com.google.firebase.auth.FirebaseAuth
 
 class RegisterActivity : ComponentActivity() {
+    private lateinit var auth: FirebaseAuth
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        try {
+            auth = FirebaseAuth.getInstance()
+            Log.d("RegisterActivity", "FirebaseAuth initialized successfully")
+        } catch (e: Exception) {
+            Log.e("RegisterActivity", "FirebaseAuth initialization failed: ${e.message}", e)
+            setContent {
+                WorkMateAITheme {
+                    Text("Firebase initialization failed: ${e.message}")
+                }
+            }
+            return
+        }
         setContent {
             WorkMateAITheme {
-                RegisterScreen()
+                RegisterScreen(auth)
             }
         }
     }
 }
 
 @Composable
-fun RegisterScreen() {
+fun RegisterScreen(auth: FirebaseAuth) {
     val context = LocalContext.current
-    var username by remember { mutableStateOf("") }
+    var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    var errorMessage by remember { mutableStateOf("") }
 
-    // Use a Box to center-align the content
     Box(
         modifier = Modifier
-            .fillMaxSize() // Fills the screen
-            .padding(16.dp), // Adds padding around the content
+            .fillMaxSize()
+            .padding(16.dp),
     ) {
         Column(
             modifier = Modifier
-                .align(Alignment.Center) // Centers the content vertically and horizontally
+                .align(Alignment.Center)
                 .fillMaxWidth(),
-            horizontalAlignment = Alignment.CenterHorizontally, // Centers children horizontally
-            verticalArrangement = Arrangement.Center // Vertically centers the elements
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
         ) {
             Text(
                 "Register",
                 style = MaterialTheme.typography.headlineLarge.copy(
                     fontWeight = FontWeight.Bold,
-                    color = Color.Black // Set text color to black
+                    color = Color.Black
                 )
             )
 
             OutlinedTextField(
-                value = username,
-                onValueChange = { username = it },
-                label = { Text("Username") },
+                value = email,
+                onValueChange = { email = it; errorMessage = "" },
+                label = { Text("Email") },
                 modifier = Modifier.fillMaxWidth().padding(top = 16.dp)
             )
 
             OutlinedTextField(
                 value = password,
-                onValueChange = { password = it },
+                onValueChange = { password = it; errorMessage = "" },
                 label = { Text("Password") },
                 visualTransformation = PasswordVisualTransformation(),
                 modifier = Modifier.fillMaxWidth().padding(top = 16.dp)
             )
 
+            if (errorMessage.isNotEmpty()) {
+                Text(
+                    text = errorMessage,
+                    color = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.padding(top = 8.dp)
+                )
+            }
+
             Button(
                 onClick = {
-                    context.startActivity(Intent(context, HomeActivity::class.java))
+                    if (email.isNotEmpty() && password.isNotEmpty()) {
+                        Log.d("RegisterActivity", "Attempting registration with email: $email")
+                        auth.createUserWithEmailAndPassword(email, password)
+                            .addOnCompleteListener { task ->
+                                if (task.isSuccessful) {
+                                    Log.d("RegisterActivity", "Registration successful")
+                                    context.startActivity(Intent(context, HomeActivity::class.java))
+                                    (context as? ComponentActivity)?.finish()
+                                } else {
+                                    errorMessage = task.exception?.message ?: "Registration failed"
+                                    Log.e("RegisterActivity", "Registration failed: $errorMessage")
+                                }
+                            }
+                    } else {
+                        errorMessage = "Please fill all fields"
+                        Log.w("RegisterActivity", "Fields empty")
+                    }
                 },
                 modifier = Modifier.padding(top = 16.dp)
             ) {

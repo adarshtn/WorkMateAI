@@ -20,6 +20,7 @@ import androidx.compose.ui.text.font.FontWeight
 import com.example.workmateai.ui.theme.WorkMateAITheme
 import java.io.File
 import androidx.compose.material3.MaterialTheme
+import com.example.workmateai.utils.FirebaseUtils
 
 class ViewResumesActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -65,6 +66,7 @@ fun ViewResumesScreen() {
                             openPDF(context, file)
                         },
                         onDelete = {
+
                             file.delete()
                             resumeList = resumeDir?.listFiles()?.toList() ?: listOf()
                             Toast.makeText(context, "Deleted ${file.name}", Toast.LENGTH_SHORT).show()

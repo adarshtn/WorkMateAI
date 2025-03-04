@@ -1,18 +1,39 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools">
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="28"/>
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="28"/>
+    xmlns:tools="http://schemas.android.com/tools"
+    package="com.example.workmateai">
+
+    <!-- ✅ Required permissions -->
+    <uses-permission android:name="android.permission.INTERNET"/>
+
+    <!-- ✅ Deprecated storage permissions removed for API 29+ -->
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES"
+
+        android:required="false"/>
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <application
-
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
         android:icon="@mipmap/ic_launcher"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:label="@string/app_name"
-        android:theme="@style/Theme.WorkMateAI">
+        android:theme="@style/Theme.WorkMateAI"
+        android:usesCleartextTraffic="true">
 
+        <!-- ✅ Firebase initialization -->
+        <meta-data
+            android:name="com.google.firebase.database"
+            android:value="true" />
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_channel_id"
+            android:value="default_channel" />
+
+        <!-- ✅ FileProvider for secure file sharing -->
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.provider"
@@ -23,38 +44,32 @@
                 android:resource="@xml/file_paths" />
         </provider>
 
-        <!-- 🔹 Main Activity -->
-        <activity
-            android:name=".MainActivity"
-            android:exported="false"
-            android:label="@string/app_name"
-            android:theme="@style/Theme.WorkMateAI">
-
-
-
-        </activity>
-
-        <activity android:name=".JobSuggestionsActivity" />
-
-        <activity android:name=".LoginActivity"></activity>
-        <activity android:name=".RegisterActivity"></activity>
-        <activity android:name=".HomeActivity" />
-        <activity android:name=".CreateResumeActivity" />
-        <activity
-            android:name=".ViewResumesActivity"
-            android:exported="true"
-            android:theme="@style/Theme.WorkMateAI" />
-
-
-        <!-- 🔹 Resume Activity (Add this line inside <application>) -->
+        <!-- ✅ Entry point: WelcomeActivity -->
         <activity android:name=".WelcomeActivity"
             android:theme="@style/Theme.WorkMateAI"
             android:exported="true">
-        <intent-filter>
-            <action android:name="android.intent.action.MAIN" />
-            <category android:name="android.intent.category.LAUNCHER" />
-        </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
         </activity>
-    </application>
 
+        <!-- ✅ Main Activity -->
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:label="@string/app_name"
+            android:theme="@style/Theme.WorkMateAI"/>
+
+        <!-- ✅ Other Activities -->
+        <activity android:name=".LoginActivity" android:exported="false"/>
+        <activity android:name=".RegisterActivity" android:exported="false"/>
+        <activity android:name=".HomeActivity" android:exported="false"/>
+        <activity android:name=".CreateResumeActivity" android:exported="false"/>
+        <activity android:name=".ViewResumesActivity" android:exported="true"/>
+        <activity android:name=".JobSuggestionsActivity" android:exported="false"/>
+        <activity android:name=".JobResultsActivity" />
+
+
+    </application>
 </manifest>

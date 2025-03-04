@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "743020002262",
+    "firebase_url": "https://workmateai-5e5f1-default-rtdb.firebaseio.com",
+    "project_id": "workmateai-5e5f1",
+    "storage_bucket": "workmateai-5e5f1.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:743020002262:android:cd223a0c462abb114c0277",
+        "android_client_info": {
+          "package_name": "com.example.workmateai"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDsXujOyFEdCk5XKRpvmykbjtM8HdOs-pM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

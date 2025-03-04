@@ -11,5 +11,5 @@
     <color name="primary">#6200EE</color>
     <color name="textPrimary">#333333</color>
     <color name="gray">#BDBDBD</color>
-
+    <color name="light_gray">#D3D3D3</color>
 </resources>

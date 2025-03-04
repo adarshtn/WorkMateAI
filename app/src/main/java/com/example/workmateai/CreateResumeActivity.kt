@@ -25,10 +25,17 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.*
 import android.graphics.pdf.PdfDocument
+import android.net.Uri
 import android.os.Environment
 import java.io.File
 import java.io.FileOutputStream
 import androidx.core.content.FileProvider
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.DatabaseReference
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.storage.FirebaseStorage
+import com.google.firebase.storage.StorageReference
+import java.util.UUID
 
 // Data classes
 data class Education(
@@ -806,11 +813,16 @@ fun generatePDF(
         pdfDocument.close()
         Toast.makeText(context, "PDF saved as $finalFileName", Toast.LENGTH_LONG).show()
         openPDF(context, filePath)
+        val pdfFile = File(context.getExternalFilesDir(null), "resume.pdf")
+       // FirebaseUtils.uploadPDFToFirebase(context, pdfFile)
+
     } catch (e: Exception) {
         e.printStackTrace()
         Toast.makeText(context, "Error saving PDF", Toast.LENGTH_LONG).show()
     }
 }
+
+
 // Text Wrapping for PDF
 fun drawWrappedText(canvas: Canvas, text: String, x: Float, y: Float, paint: Paint, maxWidth: Float): Float {
     var yPos = y
