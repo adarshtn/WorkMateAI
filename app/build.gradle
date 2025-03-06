@@ -71,8 +71,6 @@ dependencies {
     implementation 'com.google.android.material:material:1.11.0'
     implementation 'com.itextpdf:itext7-core:7.1.9'
     implementation 'androidx.core:core-splashscreen:1.0.1'
-    implementation 'com.google.code.gson:gson:2.9.0' // JSON parsing
-    implementation 'com.squareup.okhttp3:okhttp:4.10.0' // HTTP requests
     implementation 'com.squareup.okhttp3:okhttp:4.10.0' // Latest OkHttp version
     implementation 'com.google.code.gson:gson:2.10.1' // Latest version of Gson
     implementation 'org.apache.pdfbox:pdfbox:2.0.30'
@@ -80,6 +78,7 @@ dependencies {
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3'
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3'
     implementation 'com.facebook.shimmer:shimmer:0.5.0'
+
 
 
 }

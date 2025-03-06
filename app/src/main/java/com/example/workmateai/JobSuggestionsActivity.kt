@@ -4,9 +4,7 @@ import android.Manifest
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.net.Uri
 import android.os.*
-import android.view.Gravity
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -24,8 +22,8 @@ import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.example.workmateai.ui.theme.WorkMateAITheme
-import com.example.workmateai.utils.GoogleNLPHelper
 import com.example.workmateai.utils.PDFUtils
+import com.example.workmateai.utils.searchJobs
 import kotlinx.coroutines.*
 import java.io.File
 
@@ -68,7 +66,6 @@ class JobSuggestionsActivity : ComponentActivity() {
     }
 }
 
-// ✅ Updated Job Data Class (Implements Parcelable)
 data class Job(
     val title: String,
     val company: String,
@@ -140,11 +137,7 @@ fun JobSuggestionsScreen() {
     }
 }
 
-// ✅ Updated function to process resume and fetch job suggestions
-suspend fun processResumeFile(
-    context: Context,
-    selectedFile: File
-) {
+suspend fun processResumeFile(context: Context, selectedFile: File) {
     try {
         val extractedText = withContext(Dispatchers.IO) {
             PDFUtils.extractTextFromPDF(context, selectedFile)
@@ -158,30 +151,21 @@ suspend fun processResumeFile(
         }
 
         val skillsList: List<String> = withContext(Dispatchers.IO) {
-            GoogleNLPHelper.analyzeText(context, extractedText)
-                .getOrElse {
-                    withContext(Dispatchers.Main) {
-                        showToastOnce(context, "Skill extraction failed: ${it.localizedMessage}")
-                    }
-                    emptyList()
-                }
+            PDFUtils.extractSkillsFromPDFText(extractedText)
         }
 
         withContext(Dispatchers.Main) {
             if (skillsList.isNotEmpty()) {
                 showToastOnce(context, "Skills extracted: ${skillsList.joinToString(", ")}")
             } else {
-                showToastOnce(context, "No relevant skills found")
+                showToastOnce(context, "No skills found in Skills section")
             }
         }
 
-        val topSkill = skillsList.firstOrNull() ?: "Software Developer"
-
         val jobs = withContext(Dispatchers.IO) {
-            searchJobs(topSkill)
+            searchJobs(context, skillsList)
         }
 
-        // ✅ Pass the job list to JobResultsActivity correctly
         withContext(Dispatchers.Main) {
             val intent = Intent(context, JobResultsActivity::class.java).apply {
                 putParcelableArrayListExtra("JOB_LIST", ArrayList(jobs))
@@ -255,25 +239,12 @@ fun ResumeSelectionCard(file: File, onSelect: (File) -> Unit) {
     }
 }
 
-// ✅ Centralized Toast management
 private var currentToast: Toast? = null
 
 fun showToastOnce(context: Context, message: String) {
     val appContext = context.applicationContext
     currentToast?.cancel()
     currentToast = Toast.makeText(appContext, message, Toast.LENGTH_SHORT).apply {
-        setGravity(Gravity.CENTER, 0, 0)
-        show()
-    }
-}
-
-// ✅ Mock job search function (Replace with API call)
-suspend fun searchJobs(skill: String): List<Job> {
-    return withContext(Dispatchers.Default) {
-        listOf(
-            Job("Software Engineer", "Google", "Bangalore", "https://google.com/jobs"),
-            Job("Data Scientist", "Amazon", "Hyderabad", "https://amazon.jobs"),
-            Job("Android Developer", "Microsoft", "Remote", "https://microsoft.com/careers")
-        )
+        show() // Removed setGravity call
     }
 }

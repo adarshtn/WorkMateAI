@@ -17,13 +17,12 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.workmateai.ui.theme.WorkMateAITheme
-import java.io.Serializable
 
 class JobResultsActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val jobs = intent.getSerializableExtra("JOB_LIST") as? List<Job> ?: emptyList()
+        val jobs = intent.getParcelableArrayListExtra<Job>("JOB_LIST") ?: emptyList()
 
         setContent {
             WorkMateAITheme {
@@ -89,4 +88,3 @@ fun JobItem(job: Job) {
         }
     }
 }
-
