@@ -24,8 +24,37 @@ import com.example.workmateai.ui.JobResultsActivity
 import com.example.workmateai.ui.theme.WorkMateAITheme
 import com.example.workmateai.utils.JobSearchUtils
 import com.example.workmateai.utils.PDFUtils
+import com.example.workmateai.utils.SkillEnhancer
 import kotlinx.coroutines.*
 import java.io.File
+
+data class Job(
+    val title: String,
+    val company: String,
+    val location: String,
+    val link: String
+) : Parcelable {
+    constructor(parcel: Parcel) : this(
+        parcel.readString() ?: "",
+        parcel.readString() ?: "",
+        parcel.readString() ?: "",
+        parcel.readString() ?: ""
+    )
+
+    override fun writeToParcel(parcel: Parcel, flags: Int) {
+        parcel.writeString(title)
+        parcel.writeString(company)
+        parcel.writeString(location)
+        parcel.writeString(link)
+    }
+
+    override fun describeContents(): Int = 0
+
+    companion object CREATOR : Parcelable.Creator<Job> {
+        override fun createFromParcel(parcel: Parcel): Job = Job(parcel)
+        override fun newArray(size: Int): Array<Job?> = arrayOfNulls(size)
+    }
+}
 
 class JobSuggestionsActivity : ComponentActivity() {
     private val coroutineScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
@@ -64,196 +93,181 @@ class JobSuggestionsActivity : ComponentActivity() {
     companion object {
         private const val STORAGE_PERMISSION_REQUEST_CODE = 100
     }
-}
 
-data class Job(
-    val title: String,
-    val company: String,
-    val location: String,
-    val link: String
-) : Parcelable {
-    constructor(parcel: Parcel) : this(
-        parcel.readString() ?: "",
-        parcel.readString() ?: "",
-        parcel.readString() ?: "",
-        parcel.readString() ?: ""
-    )
+    @Composable
+    fun JobSuggestionsScreen() {
+        val context = LocalContext.current
+        val coroutineScope = rememberCoroutineScope()
+        val resumeDir = context.getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS)
+        var resumeList by remember { mutableStateOf(resumeDir?.listFiles()?.toList() ?: listOf()) }
 
-    override fun writeToParcel(parcel: Parcel, flags: Int) {
-        parcel.writeString(title)
-        parcel.writeString(company)
-        parcel.writeString(location)
-        parcel.writeString(link)
-    }
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                "Select Resume for Job Suggestions",
+                style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
+                modifier = Modifier.padding(bottom = 16.dp)
+            )
 
-    override fun describeContents(): Int = 0
-
-    companion object CREATOR : Parcelable.Creator<Job> {
-        override fun createFromParcel(parcel: Parcel): Job = Job(parcel)
-        override fun newArray(size: Int): Array<Job?> = arrayOfNulls(size)
-    }
-}
-
-@Composable
-fun JobSuggestionsScreen() {
-    val context = LocalContext.current
-    val coroutineScope = rememberCoroutineScope()
-    val resumeDir = context.getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS)
-    var resumeList by remember { mutableStateOf(resumeDir?.listFiles()?.toList() ?: listOf()) }
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text(
-            "Select Resume for Job Suggestions",
-            style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
-            modifier = Modifier.padding(bottom = 16.dp)
-        )
-
-        if (resumeList.isNotEmpty()) {
-            LazyColumn(
-                modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                items(resumeList) { file ->
-                    ResumeSelectionCard(file) { selectedFile ->
-                        coroutineScope.launch {
-                            processResumeFile(context, selectedFile)
+            if (resumeList.isNotEmpty()) {
+                LazyColumn(
+                    modifier = Modifier.weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    items(resumeList) { file ->
+                        ResumeSelectionCard(file) { selectedFile ->
+                            coroutineScope.launch {
+                                processResumeFile(context, selectedFile)
+                            }
                         }
                     }
                 }
-            }
-        } else {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                Text("No saved resumes found.", style = MaterialTheme.typography.bodyMedium)
+            } else {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text("No saved resumes found.", style = MaterialTheme.typography.bodyMedium)
+                }
             }
         }
     }
-}
 
-suspend fun processResumeFile(context: Context, selectedFile: File) {
-    try {
-        val extractedText = withContext(Dispatchers.IO) {
-            PDFUtils.extractTextFromPDF(context, selectedFile)
-        }
+    @Composable
+    fun ResumeSelectionCard(file: File, onSelect: (File) -> Unit) {
+        var showDialog by remember { mutableStateOf(false) }
 
-        if (extractedText.isNullOrEmpty()) {
-            withContext(Dispatchers.Main) {
-                showToastOnce(context, "Unable to extract text from PDF")
-            }
-            return
-        }
-
-        val skillsList: List<String> = withContext(Dispatchers.IO) {
-            PDFUtils.extractSkillsFromPDFText(extractedText)
-        }
-
-        withContext(Dispatchers.Main) {
-            if (skillsList.isNotEmpty()) {
-                showToastOnce(context, "Skills extracted: ${skillsList.joinToString(", ")}")
-            } else {
-                showToastOnce(context, "No skills found in Skills section")
-            }
-        }
-
-        val jobs = withContext(Dispatchers.IO) {
-            JobSearchUtils.searchJobs(context, skillsList)
-                .map { adzunaJob ->
-                    Job(
-                        title = adzunaJob.title,
-                        company = adzunaJob.company,
-                        location = adzunaJob.location,
-                        link = adzunaJob.redirectUrl
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+            elevation = CardDefaults.cardElevation(6.dp),
+            shape = MaterialTheme.shapes.medium
+        ) {
+            Row(
+                modifier = Modifier
+                    .padding(16.dp)
+                    .fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Column {
+                    Text(
+                        text = file.name,
+                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                    )
+                    Text(
+                        "Click 'Select' to fetch suggestions",
+                        style = MaterialTheme.typography.bodySmall
                     )
                 }
-        }
 
-        withContext(Dispatchers.Main) {
-            android.util.Log.d("JobSuggestions", "Jobs before intent: $jobs") // Add logging
-            val intent = Intent(context, JobResultsActivity::class.java).apply {
-                putParcelableArrayListExtra("JOB_LIST", ArrayList(jobs))
-            }
-            context.startActivity(intent)
-        }
-
-    } catch (e: Exception) {
-        withContext(Dispatchers.Main) {
-            showToastOnce(context, "Processing Error: ${e.localizedMessage}")
-        }
-    }
-}
-
-@Composable
-fun ResumeSelectionCard(file: File, onSelect: (File) -> Unit) {
-    var showDialog by remember { mutableStateOf(false) }
-
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
-        elevation = CardDefaults.cardElevation(6.dp),
-        shape = MaterialTheme.shapes.medium
-    ) {
-        Row(
-            modifier = Modifier
-                .padding(16.dp)
-                .fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Column {
-                Text(
-                    text = file.name,
-                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
-                )
-                Text("Click 'Select' to fetch suggestions", style = MaterialTheme.typography.bodySmall)
-            }
-
-            Button(onClick = { showDialog = true }) {
-                Text("Select")
-            }
-        }
-    }
-
-    if (showDialog) {
-        AlertDialog(
-            onDismissRequest = { showDialog = false },
-            title = { Text("Confirm Selection") },
-            text = { Text("Do you want to fetch job suggestions for ${file.name}?") },
-            confirmButton = {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(8.dp),
-                    horizontalArrangement = Arrangement.SpaceEvenly
-                ) {
-                    Button(onClick = { showDialog = false }) {
-                        Text("No")
-                    }
-
-                    Button(onClick = {
-                        showDialog = false
-                        onSelect(file)
-                    }) {
-                        Text("Yes")
-                    }
+                Button(onClick = { showDialog = true }) {
+                    Text("Select")
                 }
             }
-        )
+        }
+
+        if (showDialog) {
+            AlertDialog(
+                onDismissRequest = { showDialog = false },
+                title = { Text("Confirm Selection") },
+                text = { Text("Do you want to fetch job suggestions for ${file.name}?") },
+                confirmButton = {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(8.dp),
+                        horizontalArrangement = Arrangement.SpaceEvenly
+                    ) {
+                        Button(onClick = { showDialog = false }) {
+                            Text("No")
+                        }
+
+                        Button(onClick = {
+                            showDialog = false
+                            onSelect(file)
+                        }) {
+                            Text("Yes")
+                        }
+                    }
+                }
+            )
+        }
     }
-}
 
-private var currentToast: Toast? = null
+    private var currentToast: Toast? = null
 
-fun showToastOnce(context: Context, message: String) {
-    val appContext = context.applicationContext
-    currentToast?.cancel()
-    currentToast = Toast.makeText(appContext, message, Toast.LENGTH_SHORT).apply {
-        show()
+    private fun showToastOnce(context: Context, message: String) {
+        val appContext = context.applicationContext
+        currentToast?.cancel()
+        currentToast = Toast.makeText(appContext, message, Toast.LENGTH_SHORT).apply {
+            show()
+        }
+    }
+
+    suspend fun processResumeFile(context: Context, selectedFile: File) {
+        try {
+            val extractedText = withContext(Dispatchers.IO) {
+                PDFUtils.extractTextFromPDF(context, selectedFile)
+            }
+
+            if (extractedText.isNullOrEmpty()) {
+                withContext(Dispatchers.Main) {
+                    showToastOnce(context, "Unable to extract text from PDF")
+                }
+                return
+            }
+
+            val skillsList: List<String> = withContext(Dispatchers.IO) {
+                PDFUtils.extractSkillsFromPDFText(extractedText)
+            }
+
+            withContext(Dispatchers.Main) {
+                if (skillsList.isNotEmpty()) {
+                    showToastOnce(context, "Skills extracted: ${skillsList.joinToString(", ")}")
+                } else {
+                    showToastOnce(context, "No skills found in Skills section")
+                }
+            }
+
+            val enhancedSkills = withContext(Dispatchers.IO) {
+                SkillEnhancer.enhanceSkills(skillsList)
+            }
+
+            val jobs = withContext(Dispatchers.IO) {
+                // Use up to 4 original skills only
+                val searchSkills = skillsList.take(4).distinctBy { it.lowercase() }
+                android.util.Log.d("JobSuggestions", "Search skills: $searchSkills")
+                JobSearchUtils.searchJobs(context, searchSkills)
+                    .map { adzunaJob ->
+                        Job(
+                            title = adzunaJob.title,
+                            company = adzunaJob.company,
+                            location = adzunaJob.location,
+                            link = adzunaJob.redirectUrl
+                        )
+                    }
+            }
+
+            withContext(Dispatchers.Main) {
+                android.util.Log.d("JobSuggestions", "Enhanced skills (for display): $enhancedSkills")
+                android.util.Log.d("JobSuggestions", "Jobs before intent: $jobs")
+                val intent = Intent(context, JobResultsActivity::class.java).apply {
+                    putParcelableArrayListExtra("JOB_LIST", ArrayList(jobs))
+                    putStringArrayListExtra("ENHANCED_SKILLS", ArrayList(enhancedSkills))
+                }
+                android.util.Log.d("JobSuggestions", "Launching JobResultsActivity with intent")
+                context.startActivity(intent)
+            }
+
+        } catch (e: Exception) {
+            withContext(Dispatchers.Main) {
+                showToastOnce(context, "Processing Error: ${e.localizedMessage}")
+            }
+        }
     }
 }

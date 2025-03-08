@@ -3,6 +3,7 @@ package com.example.workmateai.ui
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.clickable
@@ -23,17 +24,21 @@ class JobResultsActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val jobs = intent.getParcelableArrayListExtra<Job>("JOB_LIST") ?: emptyList()
+        val enhancedSkills = intent.getStringArrayListExtra("ENHANCED_SKILLS") ?: emptyList()
+        Log.d("JobResultsActivity", "Activity started with jobs: $jobs, enhanced skills: $enhancedSkills")
         setContent {
             WorkMateAITheme {
-                JobResultsScreen(jobs)
+                JobResultsScreen(jobs, enhancedSkills)
             }
         }
     }
 }
 
 @Composable
-fun JobResultsScreen(jobs: List<Job>) {
+fun JobResultsScreen(jobs: List<Job>, enhancedSkills: List<String>) {
     val context = LocalContext.current
+    var isLoading by remember { mutableStateOf(true) }
+    LaunchedEffect(jobs) { isLoading = false }
 
     Column(
         modifier = Modifier
@@ -46,20 +51,33 @@ fun JobResultsScreen(jobs: List<Job>) {
             style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
             modifier = Modifier.padding(bottom = 16.dp)
         )
-
-        if (jobs.isEmpty()) {
+        if (enhancedSkills.isNotEmpty()) {
+            Text(
+                "AI-Enhanced Skills: ${enhancedSkills.joinToString(", ")}",
+                style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold),
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
+        }
+        if (isLoading) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Text("Loading jobs...", style = MaterialTheme.typography.bodyMedium)
+            }
+        } else if (jobs.isEmpty()) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 Text("No job listings available.", style = MaterialTheme.typography.bodyMedium)
+                Log.d("JobResultsActivity", "No jobs to display")
             }
         } else {
             LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 items(jobs) { job ->
                     JobCard(job) {
+                        Log.d("JobResultsActivity", "Job clicked: ${job.link}")
                         val intent = Intent(Intent.ACTION_VIEW, Uri.parse(job.link))
                         context.startActivity(intent)
                     }
                 }
             }
+            Log.d("JobResultsActivity", "Jobs displayed: ${jobs.size}")
         }
     }
 }
