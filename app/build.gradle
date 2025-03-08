@@ -2,9 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
-
     id 'com.google.gms.google-services'
-
 }
 
 android {
@@ -17,9 +15,6 @@ android {
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
-        packagingOptions {
-            exclude 'META-INF/DEPENDENCIES'
-        }
     }
     buildTypes {
         release {
@@ -39,6 +34,11 @@ android {
     }
     composeOptions {
         kotlinCompilerExtensionVersion '2.0.0'
+    }
+    packagingOptions {
+        resources {
+            excludes += ['META-INF/DEPENDENCIES', 'META-INF/INDEX.LIST']
+        }
     }
 }
 
@@ -65,20 +65,19 @@ dependencies {
     implementation 'com.google.firebase:firebase-auth'
     implementation 'com.google.firebase:firebase-firestore'
     implementation 'com.google.firebase:firebase-database:20.3.0'
-
     implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
     implementation 'com.google.android.material:material:1.11.0'
     implementation 'com.itextpdf:itext7-core:7.1.9'
     implementation 'androidx.core:core-splashscreen:1.0.1'
-    implementation 'com.squareup.okhttp3:okhttp:4.10.0' // Latest OkHttp version
-    implementation 'com.google.code.gson:gson:2.10.1' // Latest version of Gson
+    implementation 'com.squareup.okhttp3:okhttp:4.10.0'
+    implementation 'com.google.code.gson:gson:2.10.1'
     implementation 'org.apache.pdfbox:pdfbox:2.0.30'
     implementation 'com.tom-roush:pdfbox-android:2.0.27.0'
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3'
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3'
-    implementation 'com.facebook.shimmer:shimmer:0.5.0'
-
-
-
+    implementation 'com.valentinilk.shimmer:compose-shimmer:1.2.0'
+    implementation 'com.google.auth:google-auth-library-oauth2-http:1.23.0'
+    implementation 'com.google.auth:google-auth-library-credentials:1.23.0'
+    implementation 'org.json:json:20230227'
 }

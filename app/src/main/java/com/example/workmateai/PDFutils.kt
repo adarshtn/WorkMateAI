@@ -40,8 +40,9 @@ object PDFUtils {
                 if (trimmedLine.contains(":")) {
                     val skillsPart = trimmedLine.split(":").getOrNull(1)?.trim() ?: continue
                     val skillItems = skillsPart.split(",")
+                        .flatMap { it.split(" ") } // Split by spaces too
                         .map { it.trim() }
-                        .map { it.replace("•", "").trim() } // Remove bullet points
+                        .map { it.replace("•", "") } // Remove bullet points
                         .filter { it.isNotEmpty() }
                     skills.addAll(skillItems)
                 }

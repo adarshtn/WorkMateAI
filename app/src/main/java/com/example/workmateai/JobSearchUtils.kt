@@ -2,85 +2,68 @@ package com.example.workmateai.utils
 
 import android.content.Context
 import android.util.Log
-import com.example.workmateai.Job
 import com.google.gson.Gson
-import com.google.gson.annotations.SerializedName
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import okhttp3.RequestBody.Companion.toRequestBody
-import java.io.IOException
+import org.json.JSONObject
 
-private val client = OkHttpClient()
-private val gson = Gson()
-
-suspend fun searchJobs(context: Context, skills: List<String>): List<Job> = withContext(Dispatchers.IO) {
-    try {
-        val apiKey = context.getString(com.example.workmateai.R.string.google_cloud_api_key)
-        val projectId = "YOUR_PROJECT_ID" // Replace with your Google Cloud project ID
-        val url = "https://jobs.googleapis.com/v4/projects/$projectId/jobs:search?key=$apiKey"
-
-        // Limit to top 5 skills for a concise query
-        val querySkills = skills.take(5)
-        val query = querySkills.joinToString(" ")
-        Log.d("JobSearchUtils", "Searching jobs with query: $query (from skills: $skills)")
-
-        val requestBody = """
-            {
-                "requestMetadata": {
-                    "domain": "your-app-domain.com",
-                    "userId": "anonymous"
-                },
-                "searchMode": "JOB_SEARCH",
-                "query": "$query",
-                "pageSize": 10
-            }
-        """.trimIndent().toRequestBody("application/json".toMediaTypeOrNull())
-
-        val request = Request.Builder()
-            .url(url)
-            .post(requestBody)
-            .build()
-
-        val response = client.newCall(request).execute()
-
-        if (response.isSuccessful) {
-            val responseBody = response.body?.string()
-            Log.d("JobSearchUtils", "API Response: $responseBody")
-            val jobResponse = gson.fromJson(responseBody, JobSearchResponse::class.java)
-            jobResponse.matchingJobs?.take(10)?.map { it.toJob() } ?: emptyList()
-        } else {
-            val errorBody = response.body?.string()
-            Log.e("JobSearchUtils", "API Error: ${response.code} - ${response.message}, Body: $errorBody")
-            throw Exception("API Error: ${response.code} - ${response.message}")
-        }
-    } catch (e: IOException) {
-        Log.e("JobSearchUtils", "Network Error: ${e.message}")
-        throw Exception("Network Error: ${e.message}")
-    } catch (e: Exception) {
-        Log.e("JobSearchUtils", "Job Search Error: ${e.message}")
-        throw Exception("Job Search Error: ${e.message}")
-    }
-}
-
-data class JobSearchResponse(
-    @SerializedName("matchingJobs") val matchingJobs: List<MatchingJob>?
+// Data class for Adzuna job results
+data class AdzunaJob(
+    val title: String,
+    val company: String,
+    val description: String,
+    val location: String,
+    val redirectUrl: String
 )
 
-data class MatchingJob(
-    @SerializedName("jobTitle") val jobTitle: String?,
-    @SerializedName("companyName") val companyName: String?,
-    @SerializedName("location") val location: String?,
-    @SerializedName("requisitionId") val requisitionId: String?
-) {
-    fun toJob(): Job {
-        return Job(
-            title = jobTitle ?: "Unknown Title",
-            company = companyName ?: "Unknown Company",
-            location = location ?: "Unknown Location",
-            link = "https://jobs.google.com/$requisitionId" // Placeholder
-        )
+object JobSearchUtils {
+    private val client = OkHttpClient()
+    private val gson = Gson()
+
+    suspend fun searchJobs(context: Context, skills: List<String>): List<AdzunaJob> = withContext(Dispatchers.IO) {
+        try {
+            val appId = "0b8a0caf" // Your Adzuna App ID
+            val appKey = "498f6e67f6d1df9071f0a0595902dc52" // Your Adzuna App Key
+            val query = skills.take(5).joinToString(" ") // e.g., "Java Kotlin C HTML CSS"
+            val url = "https://api.adzuna.com/v1/api/jobs/us/search/1?app_id=$appId&app_key=$appKey&what=" + query.replace(" ", "%20") + "&content-type=application/json"
+            Log.d("JobSearchUtils", "API URL: $url")
+
+            val request = Request.Builder()
+                .url(url)
+                .get()
+                .build()
+
+            val response = client.newCall(request).execute()
+            if (response.isSuccessful) {
+                val responseBody = response.body?.string()
+                Log.d("JobSearchUtils", "Raw API Response: $responseBody")
+                val json = JSONObject(responseBody)
+                val results = json.getJSONArray("results")
+                val jobs = mutableListOf<AdzunaJob>()
+                for (i in 0 until results.length()) {
+                    val job = results.getJSONObject(i)
+                    jobs.add(
+                        AdzunaJob(
+                            title = job.getString("title"),
+                            company = job.getJSONObject("company").getString("display_name"),
+                            description = job.getString("description"),
+                            location = job.getJSONObject("location").getJSONArray("area").getString(0),
+                            redirectUrl = job.getString("redirect_url")
+                        )
+                    )
+                }
+                Log.d("JobSearchUtils", "Parsed Jobs: $jobs")
+                jobs.take(10) // Limit to 10 results
+            } else {
+                val errorBody = response.body?.string()
+                Log.e("JobSearchUtils", "API Error: ${response.code} - ${response.message}, Body: $errorBody")
+                emptyList()
+            }
+        } catch (e: Exception) {
+            Log.e("JobSearchUtils", "Job Search Error: ${e.message}")
+            emptyList()
+        }
     }
 }

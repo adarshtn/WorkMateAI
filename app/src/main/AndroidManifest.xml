@@ -68,7 +68,7 @@
         <activity android:name=".CreateResumeActivity" android:exported="false"/>
         <activity android:name=".ViewResumesActivity" android:exported="true"/>
         <activity android:name=".JobSuggestionsActivity" android:exported="false"/>
-        <activity android:name=".JobResultsActivity" />
+        <activity android:name=".ui.JobResultsActivity" />
 
 
     </application>

@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "workmateai",
+  "private_key_id": "4650dba2ff7d2593dbf89b2ab53bc038e21deb58",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQC0uxAjGxSpjT+h\no4tpdzGsWCFhQvBymvKlNPSveYChpc2x/R2ahI86EZYbTnEeg8EkD5gpdESjWRYs\n6AZ4nygMp20MjShMOAOJcQ98nljkhNURnCivNt1qDo5Cj4B/QUp4FGjyqN4a8xKD\niABF3RiSR/IwDBQy1EMnwz+STCnp3WkCRJOirfTnp4/WmYVPjdNBo8oVBJXz8FPN\nqRfJvZyhHbsvWx1NHske3SmBpl+aMFHN81cjXD6bq80gCg8fk3jU0nnHFdEj6d1I\n3qvVzJBaM/kV83Zoyh2jzGWtmvY4TKsxZgV2RT5SvyvFQsd4VVyR+3uxAR9WGR8N\nAkQzEP/zAgMBAAECggEASrDOW/vKn8HArOAGcxkv/a5UaTo9Xde8dNs8TjK0HtoD\nds4JCH1FJfXzp6hU5owD64/ITkV/QlTEbd2cIwh/iC8/SYMixtEVYR1JDbLxQMvG\ntKbpR3QwsC6Ay3A75huJF7QzpSl11QRkv9gaaMUVbQrvw7ySMml3sXynDqKMZdoJ\nE24Qg1a2JTq4URmLZcem0VzymB4Zp5JREoqhgcF8PCcQjeVPlQqBpR5e/lP422cq\n/j5wqlZXxNzAS3+tsUPpBu1CL7FFitAFcxiOVX591eVcw5AmwoPEw+lbdW+DIKew\nlkkvXJH8AUX/WQNG8Qo/cBgOhXDyroLDHBIWxjwuFQKBgQDrXbXg2PhRVViDUG5z\nPHNuY5UI6WDtyLbOeSi5YjA6bbDx2Yl3FA11t58G5L1iU+Lfs7slc1ys2cze1wdL\n3DF4za675Lv5ThnxWsAyZGOyaov54gmrwppZX0YUi2f5YpFYhpun027CrQ7h8lbj\n3hyA1C1Tbmkn/Wr7qOY80RnsTQKBgQDEky3D1KN2jXwf5cB8fFvnenXgDc6n38x9\n5cLUUDTG3ywvfK1OlOHyRj3Cw5jZg7iCJKQPXqe6JLHqJcsTN6W19HNUlL3mEagD\nYRPl+8I9scXUjnfNqHRsMXMXzhd6LzW6O1rQI4NCIA/2zsovHFSYXXPiw9p2wPHW\nGry7RKe9PwKBgQC0WLzpijdT0wqcq//F6vckCcgD6RetfBOfSDVNP5Bm5PAlkSOF\nC+d4YPfIx3LaKh74fHaVLr0/cTBLPAbKOPHrd+dA7/adBBxa1MfalRPTfVK+aVYx\nt06f1qITUfKco8ttQs94nEkNgJ+bwB6WQfYjPPFyMXMAAm18YiHxTeQILQKBgFC7\nsbwQBOKX0Ta4gYme+Y/kN61BfnJr8+xxBMd1+XcECX2nUvZHJ1T9jDgFZS1Qb+Lj\ncY3ubiyBDaEAzJqj7CcCsqs2O5fWAI8Cu81kzK3R6VIXARUx7j7RQFeyiOnhoctO\nvUlmjG4IBQZ0f41BsWyyVPn5PiwvqiMo8AJpfAq5AoGAFKOcz0BKVmsmE7YZjs6Z\nGC7jQwgFM+pkvW634M4PrZNvYF/ueI505S/eXpRSVMWzwQ74FbNXL+ShdtwZefyh\nUS0yNZek0LCajJCKG/7Ok3+DhDJXJD57g+epRT7Sy/pRXebBBkZuh+7gP8Bwwxl4\n2Ax+dGSz5dafLQifrp3oR10=\n-----END PRIVATE KEY-----\n",
+  "client_email": "workmateai-service-account@workmateai.iam.gserviceaccount.com",
+  "client_id": "109544001777730724229",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/workmateai-service-account%40workmateai.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}

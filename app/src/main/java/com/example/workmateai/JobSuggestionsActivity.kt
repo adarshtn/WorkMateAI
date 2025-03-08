@@ -8,7 +8,6 @@ import android.os.*
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -21,9 +20,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import com.example.workmateai.ui.JobResultsActivity
 import com.example.workmateai.ui.theme.WorkMateAITheme
+import com.example.workmateai.utils.JobSearchUtils
 import com.example.workmateai.utils.PDFUtils
-import com.example.workmateai.utils.searchJobs
 import kotlinx.coroutines.*
 import java.io.File
 
@@ -163,10 +163,19 @@ suspend fun processResumeFile(context: Context, selectedFile: File) {
         }
 
         val jobs = withContext(Dispatchers.IO) {
-            searchJobs(context, skillsList)
+            JobSearchUtils.searchJobs(context, skillsList)
+                .map { adzunaJob ->
+                    Job(
+                        title = adzunaJob.title,
+                        company = adzunaJob.company,
+                        location = adzunaJob.location,
+                        link = adzunaJob.redirectUrl
+                    )
+                }
         }
 
         withContext(Dispatchers.Main) {
+            android.util.Log.d("JobSuggestions", "Jobs before intent: $jobs") // Add logging
             val intent = Intent(context, JobResultsActivity::class.java).apply {
                 putParcelableArrayListExtra("JOB_LIST", ArrayList(jobs))
             }
@@ -245,6 +254,6 @@ fun showToastOnce(context: Context, message: String) {
     val appContext = context.applicationContext
     currentToast?.cancel()
     currentToast = Toast.makeText(appContext, message, Toast.LENGTH_SHORT).apply {
-        show() // Removed setGravity call
+        show()
     }
 }

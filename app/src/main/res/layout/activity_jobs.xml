@@ -5,24 +5,10 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.JobsActivity">
+    tools:context=".ui.JobResultsActivity">
 
     <!-- Shimmer Loading Effect -->
-    <com.facebook.shimmer.ShimmerFrameLayout
-        android:id="@+id/shimmerLayout"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:visibility="visible"
-        app:shimmer_auto_start="true"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        android:padding="16dp">
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@color/light_gray"/>
-    </com.facebook.shimmer.ShimmerFrameLayout>
 
     <!-- RecyclerView to Show Jobs -->
     <androidx.recyclerview.widget.RecyclerView
@@ -33,4 +19,17 @@
         android:visibility="gone"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"/>
+
+    <!-- No Jobs Message -->
+    <TextView
+        android:id="@+id/noJobsText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="No job suggestions available"
+        android:textSize="18sp"
+        android:gravity="center"
+        android:visibility="gone"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"/>
+
 </androidx.constraintlayout.widget.ConstraintLayout>
