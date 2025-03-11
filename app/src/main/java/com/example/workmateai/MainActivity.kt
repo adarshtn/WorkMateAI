@@ -69,7 +69,7 @@ fun MainScreen() {
         } else {
             Button(
                 onClick = {
-                    navigateToScreen(context, LoginActivity::class.java)
+                    navigateToScreen(context, HomeActivity::class.java)
                 },
                 modifier = Modifier.padding(8.dp)
             ) {

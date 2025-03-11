@@ -12,4 +12,15 @@
     <color name="textPrimary">#333333</color>
     <color name="gray">#BDBDBD</color>
     <color name="light_gray">#D3D3D3</color>
+    <color name="blue_primary">#1976D2</color> <!-- Primary blue -->
+    <color name="blue_secondary">#42A5F5</color> <!-- Lighter blue -->
+    <color name="blue_accent">#0288D1</color> <!-- Medium blue for accents -->
+    <color name="blue_dark">#0D47A1</color> <!-- Darker blue -->
+    <color name="text_on_blue">#FFFFFF</color> <!-- White text for readability -->
+    <color name="background_blue">#E3F2FD</color> <!-- Very light blue background -->
+    <color name="blueeee_primary">#1E88E5</color> <!-- Bright blue -->
+    <color name="blueeee_light">#42C4FB</color> <!-- Light electric blue -->
+    <color name="blueeee_deep">#01579B</color> <!-- Deep blue -->
+    <color name="blueeee_background">#E1F5FE</color> <!-- Very light blue -->
+    <color name="text_on_background">#01579B</color> <!-- Deep blue for text -->
 </resources>

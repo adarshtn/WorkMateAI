@@ -9,6 +9,7 @@ import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 
 private val DarkColorScheme = darkColorScheme(
@@ -31,6 +32,17 @@ private val LightColorScheme = lightColorScheme(
     onBackground = Color(0xFF1C1B1F),
     onSurface = Color(0xFF1C1B1F),
     */
+)
+private val BlueeeeColorScheme = lightColorScheme(
+    primary = Color(0xFF1E88E5), // Bright blue
+    secondary = Color(0xFF42C4FB), // Light electric blue
+    tertiary = Color(0xFF01579B), // Deep blue
+    background = Color(0xFFE1F5FE), // Very light blue
+    surface = Color(0xFFFFFFFF), // White for buttons/cards
+    onPrimary = Color(0xFFFFFFFF), // White text on primary
+    onSecondary = Color(0xFFFFFFFF), // White text on secondary
+    onBackground = Color(0xFF01579B), // Deep blue text on background
+    onSurface = Color(0xFF01579B) // Deep blue text on surface
 )
 
 @Composable
