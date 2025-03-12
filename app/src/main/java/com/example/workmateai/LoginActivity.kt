@@ -8,10 +8,12 @@ import androidx.activity.compose.setContent
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -19,6 +21,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import com.example.workmateai.ui.theme.WorkMateAITheme
 import com.google.firebase.auth.FirebaseAuth
 import kotlin.math.PI
@@ -55,6 +58,10 @@ fun LoginScreen(auth: FirebaseAuth) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var errorMessage by remember { mutableStateOf("") }
+    var successMessage by remember { mutableStateOf("") }
+    var showResetDialog by remember { mutableStateOf(false) }
+    var resetEmail by remember { mutableStateOf("") }
+    var resetErrorMessage by remember { mutableStateOf("") }
 
     // Animation setup from WelcomeActivity
     val infiniteTransition = rememberInfiniteTransition()
@@ -95,6 +102,129 @@ fun LoginScreen(auth: FirebaseAuth) {
     val waveOffset = sin(position * 2 * PI).toFloat() * 0.5f + 0.5f
     val secondWave = sin(secondaryPosition * 2 * PI).toFloat() * 0.5f + 0.5f
     val gradientSize = 3000f
+
+    // Custom themed password reset dialog
+    if (showResetDialog) {
+        Dialog(onDismissRequest = { showResetDialog = false }) {
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(
+                        brush = Brush.linearGradient(
+                            colors = gradientColors,
+                            start = androidx.compose.ui.geometry.Offset(
+                                x = gradientSize * waveOffset * 0.1f,
+                                y = gradientSize * 0.1f * secondWave
+                            ),
+                            end = androidx.compose.ui.geometry.Offset(
+                                x = gradientSize * (1f - waveOffset) * 0.1f,
+                                y = gradientSize * (0.1f + 0.1f * secondWave)
+                            )
+                        )
+                    )
+                    .padding(24.dp)
+            ) {
+                Column {
+                    Text(
+                        text = "Reset Password",
+                        fontSize = 22.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFFFFFFFF),
+                        modifier = Modifier.padding(bottom = 16.dp)
+                    )
+
+                    Text(
+                        text = "Enter your email address to receive a password reset link",
+                        color = Color(0xFFCCCCCC),
+                        fontSize = 14.sp,
+                        modifier = Modifier.padding(bottom = 16.dp)
+                    )
+
+                    OutlinedTextField(
+                        value = resetEmail,
+                        onValueChange = {
+                            resetEmail = it
+                            resetErrorMessage = ""
+                        },
+                        label = { Text("Email", color = Color(0xFFFFFFFF)) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 8.dp),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = Color(0xFFFFFFFF),
+                            unfocusedBorderColor = Color(0xFFCCCCCC),
+                            focusedTextColor = Color(0xFFFFFFFF),
+                            unfocusedTextColor = Color(0xFFFFFFFF),
+                            cursorColor = Color(0xFFFFFFFF)
+                        )
+                    )
+
+                    // Error message in dialog
+                    if (resetErrorMessage.isNotEmpty()) {
+                        Text(
+                            text = resetErrorMessage,
+                            color = MaterialTheme.colorScheme.error,
+                            fontSize = 14.sp,
+                            modifier = Modifier.padding(top = 4.dp, bottom = 8.dp)
+                        )
+                    }
+
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 16.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        // Cancel button
+                        TextButton(onClick = { showResetDialog = false }) {
+                            Text(
+                                text = "Cancel",
+                                color = Color(0xFFCCCCCC),
+                                fontSize = 16.sp
+                            )
+                        }
+
+                        // Send button with same gradient as login button
+                        Button(
+                            onClick = {
+                                if (resetEmail.isNotEmpty()) {
+                                    auth.sendPasswordResetEmail(resetEmail)
+                                        .addOnCompleteListener { task ->
+                                            if (task.isSuccessful) {
+                                                Log.d("LoginActivity", "Password reset email sent")
+                                                successMessage = "Password reset email sent to $resetEmail"
+                                                errorMessage = ""
+                                                showResetDialog = false
+                                            } else {
+                                                resetErrorMessage = task.exception?.message ?: "Failed to send reset email"
+                                                Log.e("LoginActivity", "Failed to send reset email: $resetErrorMessage")
+                                            }
+                                        }
+                                } else {
+                                    resetErrorMessage = "Please enter your email"
+                                }
+                            },
+                            modifier = Modifier
+                                .height(50.dp)
+                                .background(
+                                    brush = Brush.horizontalGradient(colors = buttonGradient),
+                                    shape = ButtonDefaults.shape
+                                ),
+                            colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
+                            elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp)
+                        ) {
+                            Text(
+                                text = "Send Reset Link",
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Medium,
+                                color = Color(0xFFFFFFFF)
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
 
     Box(
         modifier = Modifier
@@ -151,7 +281,7 @@ fun LoginScreen(auth: FirebaseAuth) {
             // Email field (keeping functionality, styled minimally)
             OutlinedTextField(
                 value = email,
-                onValueChange = { email = it; errorMessage = "" },
+                onValueChange = { email = it; errorMessage = ""; successMessage = "" },
                 label = { Text("Email", color = Color(0xFFFFFFFF)) },
                 modifier = Modifier
                     .fillMaxWidth()
@@ -168,7 +298,7 @@ fun LoginScreen(auth: FirebaseAuth) {
             // Password field
             OutlinedTextField(
                 value = password,
-                onValueChange = { password = it; errorMessage = "" },
+                onValueChange = { password = it; errorMessage = ""; successMessage = "" },
                 label = { Text("Password", color = Color(0xFFFFFFFF)) },
                 visualTransformation = PasswordVisualTransformation(),
                 modifier = Modifier
@@ -188,6 +318,16 @@ fun LoginScreen(auth: FirebaseAuth) {
                 Text(
                     text = errorMessage,
                     color = MaterialTheme.colorScheme.error,
+                    fontSize = 14.sp,
+                    modifier = Modifier.padding(top = 8.dp)
+                )
+            }
+
+            // Success message
+            if (successMessage.isNotEmpty()) {
+                Text(
+                    text = successMessage,
+                    color = Color(0xFF4CAF50), // Green color for success
                     fontSize = 14.sp,
                     modifier = Modifier.padding(top = 8.dp)
                 )
@@ -230,6 +370,22 @@ fun LoginScreen(auth: FirebaseAuth) {
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Medium,
                     color = Color(0xFFFFFFFF)
+                )
+            }
+
+            // Forgot Password button
+            TextButton(
+                onClick = {
+                    showResetDialog = true
+                    resetEmail = email // Pre-fill with current email if available
+                    resetErrorMessage = ""
+                },
+                modifier = Modifier.padding(top = 8.dp)
+            ) {
+                Text(
+                    text = "Forgot Password?",
+                    color = Color(0xFFCCCCCC),
+                    fontSize = 14.sp
                 )
             }
         }
