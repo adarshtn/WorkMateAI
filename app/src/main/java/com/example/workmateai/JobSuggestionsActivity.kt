@@ -409,12 +409,17 @@ class JobSuggestionsActivity : ComponentActivity() {
                 PDFUtils.extractSkillsFromPDFText(extractedText)
             }
 
-            withContext(Dispatchers.Main) {
-                if (skillsList.isNotEmpty()) {
-                    showToastOnce(context, "Skills extracted: ${skillsList.joinToString(", ")}")
-                } else {
+            // Check skills immediately and stop if none found
+            if (skillsList.isEmpty() || skillsList.all { it.trim().isEmpty() }) {
+                withContext(Dispatchers.Main) {
                     showToastOnce(context, "No skills found in Skills section")
+                    android.util.Log.d("JobSuggestions", "No skills detected, stopping process")
                 }
+                return // Stop the entire function here
+            }
+
+            withContext(Dispatchers.Main) {
+                showToastOnce(context, "Skills extracted: ${skillsList.joinToString(", ")}")
             }
 
             val enhancedSkills = withContext(Dispatchers.IO) {
@@ -450,5 +455,4 @@ class JobSuggestionsActivity : ComponentActivity() {
                 showToastOnce(context, "Processing Error: ${e.localizedMessage}")
             }
         }
-    }
-}
+    }}
